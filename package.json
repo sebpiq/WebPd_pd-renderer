@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/sebpiq/WebPd_pd-renderer#readme",
   "dependencies": {
+    "@webpd/pd-parser": "file:../WebPd_pd-parser",
     "lodash.defaults": "^4.2.0",
     "lodash.isundefined": "^3.0.1"
   },
