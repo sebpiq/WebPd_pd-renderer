@@ -12,15 +12,19 @@
 import assert from 'assert'
 import render from './render'
 import TEST_PATCHES from '@webpd/shared/test-patches'
-import parse from '@webpd/pd-parser/src/parse'
+import parse, {nextPatchId} from '@webpd/pd-parser/src/parse'
 const NEWLINE_REGEX = /\r?\n/
 
 describe('render', () => {
     
+    beforeEach(() => {
+        nextPatchId.counter = -1
+    })
+
     it('should succeed rendering simple patch', () => {
         const pd = parse(TEST_PATCHES.simple)
         assert.deepEqual(
-            render(pd).split(NEWLINE_REGEX),
+            render(pd, '0').split(NEWLINE_REGEX),
             TEST_PATCHES.simple.split(NEWLINE_REGEX)
         )
     })
@@ -28,7 +32,7 @@ describe('render', () => {
     it('should succeed rendering subpatches', () => {
         const pd = parse(TEST_PATCHES.subpatches)
         assert.deepEqual(
-            render(pd).split(NEWLINE_REGEX),
+            render(pd, '0').split(NEWLINE_REGEX),
             TEST_PATCHES.subpatches.split(NEWLINE_REGEX)
         )
     })
@@ -36,7 +40,7 @@ describe('render', () => {
     it('should succeed rendering subpatches', () => {
         const pd = parse(TEST_PATCHES.nodeElems)
         assert.deepEqual(
-            render(pd).split(NEWLINE_REGEX),
+            render(pd, '0').split(NEWLINE_REGEX),
             TEST_PATCHES.nodeElems.split(NEWLINE_REGEX)
         )
     })

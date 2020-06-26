@@ -15,8 +15,8 @@ import isUndefined from 'lodash.isundefined'
 const _nodesSort = (n1: PdJson.GenericNode, n2: PdJson.GenericNode): number =>
     parseFloat(n1.id) - parseFloat(n2.id)
 
-export default (pd: PdJson.Pd): Pd.PdString => {
-    return renderPatch(pd, pd.patches['0'], true)
+export default (pd: PdJson.Pd, patchId: PdJson.ObjectGlobalId): Pd.PdString => {
+    return renderPatch(pd, pd.patches[patchId], true)
 }
 
 const renderPatch = (pd: PdJson.Pd, patch: PdJson.Patch, root: boolean): Pd.PdString => {
@@ -84,7 +84,7 @@ const renderControl = (node: PdJson.ControlNode): Pd.PdString | null => {
 }
 
 const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
-    `#X connect ${source.id} ${source.port} ${sink.id} ${sink.port};\n`
+    `#X connect ${source.id} ${source.portlet} ${sink.id} ${sink.portlet};\n`
 
 
 // var floatAtomTpl =
