@@ -2,11 +2,12 @@
   "name": "@webpd/pd-renderer",
   "version": "0.1.0",
   "description": "Renders PdJson to a Pd file",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "test-bail": "npm explore @webpd/shared -- npm run test-bail $(pwd)",
-    "test-watch": "npm explore @webpd/shared -- npm run test-watch $(pwd)",
-    "test-debug": "npm explore @webpd/shared -- npm run test-debug $(pwd)",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/shared/configs/jest.js",
+    "rollup": "npx rollup --config node_modules/@webpd/shared/configs/rollup.ts --configPlugin typescript",
     "prettier": "npm explore @webpd/shared -- npm run prettier $(pwd)/src",
     "eslint": "npm explore @webpd/shared -- npm run eslint $(pwd)/src",
     "all": "npm run test-bail && npm run prettier && npm run eslint"
@@ -27,10 +28,15 @@
     "lodash.isundefined": "^3.0.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.2",
     "@types/lodash.defaults": "^4.2.6",
     "@types/lodash.isundefined": "^3.0.6",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.9.3",
-    "@webpd/shared": "file:../WebPd_shared"
+    "@webpd/shared": "file:../WebPd_shared",
+    "rollup": "^2.75.5",
+    "rollup-plugin-dts": "^4.2.2"
   }
 }

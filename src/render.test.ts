@@ -12,11 +12,10 @@
 import assert from 'assert'
 import render from './render'
 import TEST_PATCHES from '@webpd/shared/test-patches'
-import parse, {nextPatchId} from '@webpd/pd-parser/src/parse'
+import parse, { nextPatchId } from '@webpd/pd-parser/src/parse'
 const NEWLINE_REGEX = /\r?\n/
 
 describe('render', () => {
-    
     beforeEach(() => {
         nextPatchId.counter = -1
     })
@@ -37,7 +36,7 @@ describe('render', () => {
         )
     })
 
-    it('should succeed rendering subpatches', () => {
+    it('should succeed rendering GUI elems', () => {
         const pd = parse(TEST_PATCHES.nodeElems)
         assert.deepEqual(
             render(pd, '0').split(NEWLINE_REGEX),
