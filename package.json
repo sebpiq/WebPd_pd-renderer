@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/sebpiq/WebPd_pd-renderer#readme",
   "dependencies": {
-    "@webpd/pd-parser": "file:../WebPd_pd-parser",
     "lodash.defaults": "^4.2.0",
     "lodash.isundefined": "^3.0.1"
   },
@@ -31,12 +30,16 @@
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.2",
+    "@types/jest": "^28.1.1",
     "@types/lodash.defaults": "^4.2.6",
     "@types/lodash.isundefined": "^3.0.6",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.9.3",
+    "@webpd/pd-parser": "file:../WebPd_pd-parser",
     "@webpd/shared": "file:../WebPd_shared",
+    "jest": "^28.1.1",
     "rollup": "^2.75.5",
-    "rollup-plugin-dts": "^4.2.2"
+    "rollup-plugin-dts": "^4.2.2",
+    "ts-jest": "^28.0.4"
   }
 }

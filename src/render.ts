@@ -24,7 +24,6 @@ const renderPatch = (
     patch: PdJson.Patch,
     root: boolean
 ): Pd.PdString => {
-    const renderNodeCurried = renderNode.bind(undefined, pd)
     let rendered: Pd.PdString = ''
     const l = defaults({}, patch.layout, {
         x: 0,
@@ -33,15 +32,29 @@ const renderPatch = (
         height: 500,
     })
     const a = patch.args
+    const name = a[0] || '10'
+    const openOnLoad = isUndefined(l.openOnLoad) ? '' : ' ' + bToN(l.openOnLoad)
 
-    rendered += `#N canvas ${l.x} ${l.y} ${l.width} ${l.height} ${a[0]}${
-        isUndefined(l.openOnLoad) ? '' : ' ' + +l.openOnLoad
-    };\n`
+    rendered += `#N canvas ${l.x} ${l.y} ${l.width} ${l.height} ${name}${openOnLoad};\n`
+
+    // In .pd file node ids correspond to the position of appearance of the node in the file.
+    // Therefore, to allow rendering connections, we need reassign new ids to nodes 
+    const nodeIdMap: {[oldId: PdJson.ObjectLocalId]: PdJson.ObjectLocalId} = {}
     rendered += Object.values(patch.nodes)
-        .sort(_nodesSort)
-        .map(renderNodeCurried)
+        .map((node, i) => {
+            const newNodeId = i.toString(10)
+            nodeIdMap[node.id] = newNodeId
+            return renderNode(pd, node)
+        })
         .join('')
-    rendered += patch.connections.map(renderConnection).join('')
+    
+    rendered += patch.connections.map((connection) => {
+        const { source, sink } = connection
+        return renderConnection({
+            source: {...source, nodeId: nodeIdMap[source.nodeId]},
+            sink: {...sink, nodeId: nodeIdMap[sink.nodeId]},
+        })
+    }).join('')
 
     return rendered
 }
@@ -57,35 +70,42 @@ const renderNode = (pd: PdJson.Pd, node: PdJson.GenericNode): Pd.PdString => {
         return rendered
     }
 
-    const renderedControl = renderControl(node as PdJson.ControlNode)
+    const renderedControl = renderControlNode(node.type, a, l)
     if (renderedControl) {
         return renderedControl
+    } else {
+        return renderGenericNode(node.type, a, l)
     }
-
-    return `#X obj ${l.x} ${l.y} ${node.type}${
-        a.length ? ' ' + a.join(' ') : ''
-    };\n`
 }
 
-const renderControl = (node: PdJson.ControlNode): Pd.PdString | null => {
-    const a = node.args
-    if (node.type === 'floatatom' || node.type === 'symbolatom') {
-        return `#X ${node.type} ${node.layout.x} ${node.layout.y} ${node.layout.width} ${a[0]} ${a[1]} ${node.layout.labelPos} ${node.layout.label} ${a[2]} ${a[3]};\n`
-    } else if (node.type === 'bng') {
-        return `#X obj ${node.layout.x} ${node.layout.y} bng ${node.layout.size} ${node.layout.hold} ${node.layout.interrupt} ${a[0]} ${a[1]} ${a[2]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.fgColor} ${node.layout.labelColor};\n`
-    } else if (node.type === 'nbx') {
-        return `#X obj ${node.layout.x} ${node.layout.y} nbx ${node.layout.size} ${node.layout.height} ${a[0]} ${a[1]} ${node.layout.log} ${a[2]} ${a[3]} ${a[4]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.fgColor} ${node.layout.labelColor} ${node.layout.logHeight};\n`
-    } else if (node.type === 'vsl' || node.type === 'hsl') {
-        return `#X obj ${node.layout.x} ${node.layout.y} ${node.type} ${node.layout.width} ${node.layout.height} ${a[0]} ${a[1]} ${node.layout.log} ${a[2]} ${a[3]} ${a[4]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.fgColor} ${node.layout.labelColor} ${a[5]} ${node.layout.steadyOnClick};\n`
-    } else if (node.type === 'vradio' || node.type === 'hradio') {
-        return `#X obj ${node.layout.x} ${node.layout.y} ${node.type} ${node.layout.size} ${a[0]} ${a[1]} ${a[2]} ${a[3]} ${a[4]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.fgColor} ${node.layout.labelColor} ${a[5]};\n`
-    } else if (node.type === 'vu') {
-        return `#X obj ${node.layout.x} ${node.layout.y} vu ${node.layout.width} ${node.layout.height} ${a[0]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.labelColor} ${node.layout.log} ${a[1]};\n`
-    } else if (node.type === 'cnv') {
-        return `#X obj ${node.layout.x} ${node.layout.y} cnv ${node.layout.size} ${node.layout.width} ${node.layout.height} ${a[0]} ${a[1]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.labelColor} ${a[2]};\n`
+const renderControlNode = (
+    nodeType: PdSharedTypes.NodeType, 
+    a: PdJson.ObjectArgs,
+    l: PdJson.ControlNode['layout'],
+): Pd.PdString | null => {
+    if (isAtomLayout(nodeType, l)) {
+        return `#X ${nodeType} ${l.x} ${l.y} ${l.width} ${a[0]} ${a[1]} ${l.labelPos} ${l.label} ${a[2]} ${a[3]};\n`
+    } else if (isBangLayout(nodeType, l)) {
+        return `#X obj ${l.x} ${l.y} bng ${l.size} ${l.hold} ${l.interrupt} ${a[0]} ${a[1]} ${a[2]} ${l.label} ${l.labelX} ${l.labelY} ${l.labelFont} ${l.labelFontSize} ${l.bgColor} ${l.fgColor} ${l.labelColor};\n`
+    } else if (isNumberBoxLayout(nodeType, l)) {
+        return `#X obj ${l.x} ${l.y} nbx ${l.size} ${l.height} ${a[0]} ${a[1]} ${l.log} ${a[2]} ${a[3]} ${a[4]} ${l.label} ${l.labelX} ${l.labelY} ${l.labelFont} ${l.labelFontSize} ${l.bgColor} ${l.fgColor} ${l.labelColor} ${l.logHeight};\n`
+    } else if (isSliderLayout(nodeType, l)) {
+        return `#X obj ${l.x} ${l.y} ${nodeType} ${l.width} ${l.height} ${a[0]} ${a[1]} ${l.log} ${a[2]} ${a[3]} ${a[4]} ${l.label} ${l.labelX} ${l.labelY} ${l.labelFont} ${l.labelFontSize} ${l.bgColor} ${l.fgColor} ${l.labelColor} ${a[5]} ${l.steadyOnClick};\n`
+    } else if (isRadioLayout(nodeType, l)) {
+        return `#X obj ${l.x} ${l.y} ${nodeType} ${l.size} ${a[0]} ${a[1]} ${a[2]} ${a[3]} ${a[4]} ${l.label} ${l.labelX} ${l.labelY} ${l.labelFont} ${l.labelFontSize} ${l.bgColor} ${l.fgColor} ${l.labelColor} ${a[5]};\n`
+    } else if (isVuLayout(nodeType, l)) {
+        return `#X obj ${l.x} ${l.y} vu ${l.width} ${l.height} ${a[0]} ${l.label} ${l.labelX} ${l.labelY} ${l.labelFont} ${l.labelFontSize} ${l.bgColor} ${l.labelColor} ${l.log} ${a[1]};\n`
+    } else if (isCnvLayout(nodeType, l)) {
+        return `#X obj ${l.x} ${l.y} cnv ${l.size} ${l.width} ${l.height} ${a[0]} ${a[1]} ${l.label} ${l.labelX} ${l.labelY} ${l.labelFont} ${l.labelFontSize} ${l.bgColor} ${l.labelColor} ${a[2]};\n`
     }
     return null
 }
+
+const renderGenericNode = (
+    nodeType: PdSharedTypes.NodeType, 
+    a: PdJson.ObjectArgs,
+    l: PdJson.ObjectLayout, 
+): Pd.PdString => `#X obj ${l.x} ${l.y} ${nodeType}${a.length ? ' ' + a.join(' ') : ''};\n`
 
 const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
     `#X connect ${source.nodeId} ${source.portletId} ${sink.nodeId} ${sink.portletId};\n`
@@ -112,3 +132,47 @@ const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
 //         '#X obj ${node.layout.x} ${node.layout.y} cnv ${node.layout.size} ${node.layout.width} ${node.layout.height} ${a[0]} ${a[1]} ${node.layout.label} ${node.layout.labelX} ${node.layout.labelY} ${node.layout.labelFont} ${node.layout.labelFontSize} ${node.layout.bgColor} ${node.layout.labelColor} ${a[2]}',
 //     objTpl =
 //         '#X obj ${node.layout.x} ${node.layout.y} {{{type}}}{{#args}} {{.}}{{/args}}'
+
+const bToN = (bool: boolean) => +bool
+
+const isAtomLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.AtomLayout => 
+    nodeType === 'floatatom' || nodeType === 'symbolatom'
+
+const isBangLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.BangLayout => 
+    nodeType === 'bng'
+
+const isNumberBoxLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.NumberBoxLayout => 
+    nodeType === 'nbx'
+
+const isSliderLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.SliderLayout => 
+    nodeType === 'vsl' || nodeType === 'hsl'
+
+const isRadioLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.RadioLayout => 
+    nodeType === 'vradio' || nodeType === 'hradio'
+
+const isVuLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.VuLayout => 
+    nodeType === 'vu'
+
+const isCnvLayout = (
+    nodeType: PdSharedTypes.NodeType, 
+    layout: PdJson.ControlNode['layout']
+) : layout is PdJson.CnvLayout => 
+    nodeType === 'cnv'

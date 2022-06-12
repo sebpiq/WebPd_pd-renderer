@@ -12,6 +12,7 @@
 import assert from 'assert'
 import render from './render'
 import TEST_PATCHES from '@webpd/shared/test-patches'
+import {pdJsonNodeDefaults} from '@webpd/shared/test-helpers'
 import parse, { nextPatchId } from '@webpd/pd-parser/src/parse'
 const NEWLINE_REGEX = /\r?\n/
 
@@ -41,6 +42,62 @@ describe('render', () => {
         assert.deepEqual(
             render(pd, '0').split(NEWLINE_REGEX),
             TEST_PATCHES.nodeElems.split(NEWLINE_REGEX)
+        )
+    })
+
+    it('should render simple patch with no args', () => {
+        const pd: PdJson.Pd = {
+            arrays: {},
+            patches: {
+                '0': {
+                    id: '0',
+                    args: [],
+                    inlets: [],
+                    outlets: [],
+                    nodes: {},
+                    connections: []
+                }
+            }
+        }
+        const rendered = render(pd, '0')
+        assert.strictEqual(rendered, '#N canvas 0 0 500 500 10;\n')
+    })
+
+    it('should reassign new ids for correct connections', () => {
+        const pd: PdJson.Pd = {
+            arrays: {},
+            patches: {
+                '0': {
+                    id: '0',
+                    args: [],
+                    inlets: [],
+                    outlets: [],
+                    nodes: {
+                        'superNode666': {
+                            ...pdJsonNodeDefaults('superNode666'),
+                            args: [666],
+                        },
+                        'superNode999': {
+                            ...pdJsonNodeDefaults('superNode999'),
+                            args: [999],
+                        },
+                    },
+                    connections: [
+                        {
+                            source: { nodeId: 'superNode666', portletId: 0 },
+                            sink: { nodeId: 'superNode999', portletId: 0 },
+                        }
+                    ]
+                }
+            }
+        }
+
+        const rendered = render(pd, '0')
+        assert.strictEqual(rendered, 
+            '#N canvas 0 0 500 500 10;\n' + 
+            '#X obj 0 0 DUMMY 666;\n' +
+            '#X obj 0 0 DUMMY 999;\n' +
+            '#X connect 0 0 1 0;\n'
         )
     })
 })
