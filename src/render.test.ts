@@ -12,7 +12,7 @@
 import assert from 'assert'
 import render from './render'
 import TEST_PATCHES from '@webpd/shared/test-patches'
-import {pdJsonNodeDefaults} from '@webpd/shared/test-helpers'
+import { pdJsonNodeDefaults } from '@webpd/shared/test-helpers'
 import parse, { nextPatchId } from '@webpd/pd-parser/src/parse'
 const NEWLINE_REGEX = /\r?\n/
 
@@ -55,9 +55,9 @@ describe('render', () => {
                     inlets: [],
                     outlets: [],
                     nodes: {},
-                    connections: []
-                }
-            }
+                    connections: [],
+                },
+            },
         }
         const rendered = render(pd, '0')
         assert.strictEqual(rendered, '#N canvas 0 0 500 500 10;\n')
@@ -73,11 +73,11 @@ describe('render', () => {
                     inlets: [],
                     outlets: [],
                     nodes: {
-                        'superNode666': {
+                        superNode666: {
                             ...pdJsonNodeDefaults('superNode666'),
                             args: [666],
                         },
-                        'superNode999': {
+                        superNode999: {
                             ...pdJsonNodeDefaults('superNode999'),
                             args: [999],
                         },
@@ -86,18 +86,19 @@ describe('render', () => {
                         {
                             source: { nodeId: 'superNode666', portletId: 0 },
                             sink: { nodeId: 'superNode999', portletId: 0 },
-                        }
-                    ]
-                }
-            }
+                        },
+                    ],
+                },
+            },
         }
 
         const rendered = render(pd, '0')
-        assert.strictEqual(rendered, 
-            '#N canvas 0 0 500 500 10;\n' + 
-            '#X obj 0 0 DUMMY 666;\n' +
-            '#X obj 0 0 DUMMY 999;\n' +
-            '#X connect 0 0 1 0;\n'
+        assert.strictEqual(
+            rendered,
+            '#N canvas 0 0 500 500 10;\n' +
+                '#X obj 0 0 DUMMY 666;\n' +
+                '#X obj 0 0 DUMMY 999;\n' +
+                '#X connect 0 0 1 0;\n'
         )
     })
 })

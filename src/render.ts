@@ -12,9 +12,6 @@
 import defaults from 'lodash.defaults'
 import isUndefined from 'lodash.isundefined'
 
-const _nodesSort = (n1: PdJson.GenericNode, n2: PdJson.GenericNode): number =>
-    parseFloat(n1.id) - parseFloat(n2.id)
-
 export default (pd: PdJson.Pd, patchId: PdJson.ObjectGlobalId): Pd.PdString => {
     return renderPatch(pd, pd.patches[patchId], true)
 }
@@ -38,8 +35,10 @@ const renderPatch = (
     rendered += `#N canvas ${l.x} ${l.y} ${l.width} ${l.height} ${name}${openOnLoad};\n`
 
     // In .pd file node ids correspond to the position of appearance of the node in the file.
-    // Therefore, to allow rendering connections, we need reassign new ids to nodes 
-    const nodeIdMap: {[oldId: PdJson.ObjectLocalId]: PdJson.ObjectLocalId} = {}
+    // Therefore, to allow rendering connections, we need reassign new ids to nodes
+    const nodeIdMap: {
+        [oldId: PdJson.ObjectLocalId]: PdJson.ObjectLocalId
+    } = {}
     rendered += Object.values(patch.nodes)
         .map((node, i) => {
             const newNodeId = i.toString(10)
@@ -47,14 +46,16 @@ const renderPatch = (
             return renderNode(pd, node)
         })
         .join('')
-    
-    rendered += patch.connections.map((connection) => {
-        const { source, sink } = connection
-        return renderConnection({
-            source: {...source, nodeId: nodeIdMap[source.nodeId]},
-            sink: {...sink, nodeId: nodeIdMap[sink.nodeId]},
+
+    rendered += patch.connections
+        .map((connection) => {
+            const { source, sink } = connection
+            return renderConnection({
+                source: { ...source, nodeId: nodeIdMap[source.nodeId] },
+                sink: { ...sink, nodeId: nodeIdMap[sink.nodeId] },
+            })
         })
-    }).join('')
+        .join('')
 
     return rendered
 }
@@ -79,9 +80,9 @@ const renderNode = (pd: PdJson.Pd, node: PdJson.GenericNode): Pd.PdString => {
 }
 
 const renderControlNode = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     a: PdJson.ObjectArgs,
-    l: PdJson.ControlNode['layout'],
+    l: PdJson.ControlNode['layout']
 ): Pd.PdString | null => {
     if (isAtomLayout(nodeType, l)) {
         return `#X ${nodeType} ${l.x} ${l.y} ${l.width} ${a[0]} ${a[1]} ${l.labelPos} ${l.label} ${a[2]} ${a[3]};\n`
@@ -102,10 +103,11 @@ const renderControlNode = (
 }
 
 const renderGenericNode = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     a: PdJson.ObjectArgs,
-    l: PdJson.ObjectLayout, 
-): Pd.PdString => `#X obj ${l.x} ${l.y} ${nodeType}${a.length ? ' ' + a.join(' ') : ''};\n`
+    l: PdJson.ObjectLayout
+): Pd.PdString =>
+    `#X obj ${l.x} ${l.y} ${nodeType}${a.length ? ' ' + a.join(' ') : ''};\n`
 
 const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
     `#X connect ${source.nodeId} ${source.portletId} ${sink.nodeId} ${sink.portletId};\n`
@@ -136,43 +138,38 @@ const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
 const bToN = (bool: boolean) => +bool
 
 const isAtomLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.AtomLayout => 
+): layout is PdJson.AtomLayout =>
     nodeType === 'floatatom' || nodeType === 'symbolatom'
 
 const isBangLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.BangLayout => 
-    nodeType === 'bng'
+): layout is PdJson.BangLayout => nodeType === 'bng'
 
 const isNumberBoxLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.NumberBoxLayout => 
-    nodeType === 'nbx'
+): layout is PdJson.NumberBoxLayout => nodeType === 'nbx'
 
 const isSliderLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.SliderLayout => 
-    nodeType === 'vsl' || nodeType === 'hsl'
+): layout is PdJson.SliderLayout => nodeType === 'vsl' || nodeType === 'hsl'
 
 const isRadioLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.RadioLayout => 
+): layout is PdJson.RadioLayout =>
     nodeType === 'vradio' || nodeType === 'hradio'
 
 const isVuLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.VuLayout => 
-    nodeType === 'vu'
+): layout is PdJson.VuLayout => nodeType === 'vu'
 
 const isCnvLayout = (
-    nodeType: PdSharedTypes.NodeType, 
+    nodeType: PdSharedTypes.NodeType,
     layout: PdJson.ControlNode['layout']
-) : layout is PdJson.CnvLayout => 
-    nodeType === 'cnv'
+): layout is PdJson.CnvLayout => nodeType === 'cnv'
