@@ -6,10 +6,10 @@
   "types": "./dist/types/index.d.ts",
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/shared/configs/jest.js",
-    "rollup": "npx rollup --config node_modules/@webpd/shared/configs/rollup.mjs",
-    "prettier": "npm explore @webpd/shared -- npm run prettier $(pwd)/src",
-    "eslint": "npm explore @webpd/shared -- npm run eslint $(pwd)/src",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
+    "rollup": "npx rollup --config node_modules/@webpd/dev/configs/rollup.mjs",
+    "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
+    "eslint": "npm explore @webpd/dev -- npm run eslint $(pwd)/src",
     "all": "npm run test-bail && npm run prettier && npm run eslint"
   },
   "repository": {
@@ -36,7 +36,7 @@
     "@types/node": "^13.9.3",
     "@webpd/pd-json": "file:../WebPd_pd-json",
     "@webpd/pd-parser": "file:../WebPd_pd-parser",
-    "@webpd/shared": "file:../WebPd_shared",
+    "@webpd/dev": "file:../WebPd_dev",
     "jest": "^28.1.1",
     "rollup": "^2.75.5",
     "rollup-plugin-dts": "^4.2.2",
