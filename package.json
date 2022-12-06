@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "description": "Renders PdJson to a Pd file",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "type": "module",
   "scripts": {
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/shared/configs/jest.js",
-    "rollup": "npx rollup --config node_modules/@webpd/shared/configs/rollup.ts --configPlugin typescript",
+    "rollup": "npx rollup --config node_modules/@webpd/shared/configs/rollup.mjs",
     "prettier": "npm explore @webpd/shared -- npm run prettier $(pwd)/src",
     "eslint": "npm explore @webpd/shared -- npm run eslint $(pwd)/src",
     "all": "npm run test-bail && npm run prettier && npm run eslint"
@@ -33,7 +33,6 @@
     "@types/jest": "^28.1.1",
     "@types/lodash.defaults": "^4.2.6",
     "@types/lodash.isundefined": "^3.0.6",
-    "@types/mocha": "^7.0.2",
     "@types/node": "^13.9.3",
     "@webpd/pd-parser": "file:../WebPd_pd-parser",
     "@webpd/shared": "file:../WebPd_shared",
