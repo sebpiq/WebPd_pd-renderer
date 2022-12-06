@@ -11,9 +11,10 @@
 
 import assert from 'assert'
 import render from './render'
-import TEST_PATCHES from '@webpd/shared/test-patches'
-import { pdJsonNodeDefaults } from '@webpd/shared/test-helpers'
+import TEST_PATCHES from '@webpd/pd-json/test-patches'
+import { pdJsonNodeDefaults } from '@webpd/pd-json/src/test-helpers'
 import parse, { nextPatchId } from '@webpd/pd-parser/src/parse'
+import { PdJson } from '@webpd/pd-json'
 const NEWLINE_REGEX = /\r?\n/
 
 describe('render', () => {

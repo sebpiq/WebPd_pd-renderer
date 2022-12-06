@@ -9,6 +9,7 @@
  *
  */
 
+import { PdJson } from '@webpd/pd-json'
 import defaults from 'lodash.defaults'
 import isUndefined from 'lodash.isundefined'
 
@@ -80,7 +81,7 @@ const renderNode = (pd: PdJson.Pd, node: PdJson.GenericNode): Pd.PdString => {
 }
 
 const renderControlNode = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     a: PdJson.ObjectArgs,
     l: PdJson.ControlNode['layout']
 ): Pd.PdString | null => {
@@ -103,7 +104,7 @@ const renderControlNode = (
 }
 
 const renderGenericNode = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     a: PdJson.ObjectArgs,
     l: PdJson.ObjectLayout
 ): Pd.PdString =>
@@ -138,38 +139,38 @@ const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
 const bToN = (bool: boolean) => +bool
 
 const isAtomLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.AtomLayout =>
     nodeType === 'floatatom' || nodeType === 'symbolatom'
 
 const isBangLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.BangLayout => nodeType === 'bng'
 
 const isNumberBoxLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.NumberBoxLayout => nodeType === 'nbx'
 
 const isSliderLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.SliderLayout => nodeType === 'vsl' || nodeType === 'hsl'
 
 const isRadioLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.RadioLayout =>
     nodeType === 'vradio' || nodeType === 'hradio'
 
 const isVuLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.VuLayout => nodeType === 'vu'
 
 const isCnvLayout = (
-    nodeType: PdSharedTypes.NodeType,
+    nodeType: PdJson.ObjectType,
     layout: PdJson.ControlNode['layout']
 ): layout is PdJson.CnvLayout => nodeType === 'cnv'
