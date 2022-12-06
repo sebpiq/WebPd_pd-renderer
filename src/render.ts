@@ -13,7 +13,7 @@ import { PdJson } from '@webpd/pd-json'
 import defaults from 'lodash.defaults'
 import isUndefined from 'lodash.isundefined'
 
-export default (pd: PdJson.Pd, patchId: PdJson.ObjectGlobalId): Pd.PdString => {
+export default (pd: PdJson.Pd, patchId: PdJson.ObjectGlobalId): PdJson.PdString => {
     return renderPatch(pd, pd.patches[patchId], true)
 }
 
@@ -21,8 +21,8 @@ const renderPatch = (
     pd: PdJson.Pd,
     patch: PdJson.Patch,
     root: boolean
-): Pd.PdString => {
-    let rendered: Pd.PdString = ''
+): PdJson.PdString => {
+    let rendered: PdJson.PdString = ''
     const l = defaults({}, patch.layout, {
         x: 0,
         y: 0,
@@ -61,12 +61,12 @@ const renderPatch = (
     return rendered
 }
 
-const renderNode = (pd: PdJson.Pd, node: PdJson.GenericNode): Pd.PdString => {
+const renderNode = (pd: PdJson.Pd, node: PdJson.GenericNode): PdJson.PdString => {
     const l = defaults(node.layout, { x: 0, y: 0 })
     const a = node.args
 
     if (node.type === 'pd') {
-        let rendered: Pd.PdString = ''
+        let rendered: PdJson.PdString = ''
         rendered += renderPatch(pd, pd.patches[node.refId], false)
         rendered += `#X restore ${l.x} ${l.y} pd ${a[0]};\n`
         return rendered
@@ -84,7 +84,7 @@ const renderControlNode = (
     nodeType: PdJson.ObjectType,
     a: PdJson.ObjectArgs,
     l: PdJson.ControlNode['layout']
-): Pd.PdString | null => {
+): PdJson.PdString | null => {
     if (isAtomLayout(nodeType, l)) {
         return `#X ${nodeType} ${l.x} ${l.y} ${l.width} ${a[0]} ${a[1]} ${l.labelPos} ${l.label} ${a[2]} ${a[3]};\n`
     } else if (isBangLayout(nodeType, l)) {
@@ -107,10 +107,10 @@ const renderGenericNode = (
     nodeType: PdJson.ObjectType,
     a: PdJson.ObjectArgs,
     l: PdJson.ObjectLayout
-): Pd.PdString =>
+): PdJson.PdString =>
     `#X obj ${l.x} ${l.y} ${nodeType}${a.length ? ' ' + a.join(' ') : ''};\n`
 
-const renderConnection = ({ source, sink }: PdJson.Connection): Pd.PdString =>
+const renderConnection = ({ source, sink }: PdJson.Connection): PdJson.PdString =>
     `#X connect ${source.nodeId} ${source.portletId} ${sink.nodeId} ${sink.portletId};\n`
 
 // var floatAtomTpl =
